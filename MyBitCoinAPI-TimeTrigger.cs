@@ -1,3 +1,5 @@
+// https://arminreiter.com/2017/02/azure-functions-time-trigger-cron-cheat-sheet/ - Help with Azure Functions – Time Trigger (CRON) Cheat Sheet
+
 using System;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
