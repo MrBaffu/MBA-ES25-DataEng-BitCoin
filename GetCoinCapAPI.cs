@@ -1,8 +1,8 @@
 // Youtube tutorial: https://www.youtube.com/watch?v=btmAfKz2ijY&t=538s
 // API to get BitCoin value https://coincap.io
-// https://api.coincap.io/v2/assets/bitcoin :Get BitCoin 
-// https://api.coincap.io/v2/rates/brazilian-real :Get BRL Rate 
-// https://zetcode.com/csharp/json/ :Json handle
+// https://api.coincap.io/v2/assets/bitcoin Get BitCoin 
+// https://api.coincap.io/v2/rates/brazilian-real Get BRL Rate 
+// https://zetcode.com/csharp/json/ Json handle
 
 using System;
 using System.IO;
@@ -20,35 +20,75 @@ using System.Net.Http; // need for http client to call HTTP API
 
 namespace GetCoincapAPI.Function
 {
+
     public static class GetCoinCapAPI
     {
         [FunctionName("GetCoinCapAPI")]
-        
+
+
+
         public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
+            const double bitcoinTrigger = 130000.00;
 
             // API call URL preparation
             // string url = $"http://api.weatherstack.com/current?access_key={apiKey}&query={locationCityCountry}";
-            string url = "https://api.coincap.io/v2/assets/bitcoin";
+            string url = "https://api.coincap.io/v2/assets/bitcoin"; //API URL to get Asset Cost
             log.LogInformation($"url: {url}");
 
             // Initiate http call with weatherstack api
             var client = new HttpClient();
             var response = await client.GetAsync(url);
 
-            // Handle the http response
+            // Handle the API response
             var json = await response.Content.ReadAsStringAsync();
             dynamic responseData = JsonConvert.DeserializeObject(json);
+            dynamic varBitCoinPriceUsd = responseData.data.priceUsd;
+            double varBitcoinUSD = Convert.ToDouble(varBitCoinPriceUsd);
+
+
+            // API call URL preparation
+            // string url = $"http://api.weatherstack.com/current?access_key={apiKey}&query={locationCityCountry}";
+            url = "https://api.coincap.io/v2/rates/brazilian-real"; //API URL to get Asset Cost
+            log.LogInformation($"url: {url}");
+
+            // Initiate http call with weatherstack api
+            client = new HttpClient();
+            response = await client.GetAsync(url);
+
+            // Handle the API response
+            json = await response.Content.ReadAsStringAsync();
+            responseData = JsonConvert.DeserializeObject(json);
+            dynamic varJsonBRLRate = responseData.data.rateUsd;
+            double varBRLRate = Convert.ToDouble(varJsonBRLRate);
+
+            double varBitcoinBRL = varBitcoinUSD/varBRLRate;
+
+
+            string varTriggerMail = "False"; 
+            if (varBitcoinBRL > bitcoinTrigger)
+                {
+                    varTriggerMail = "True";
+                }
+            else
+                {
+                    varTriggerMail = "False";
+                }
+            
+            DateTime timeStamp = DateTime.Now;
+
 
             // To Test
             //doc = JsonDocument.Parse(json);
             //JsonElement root = doc.RootElement;
 
             string responseMessage = string.IsNullOrEmpty(json)
-            ? "<h1>This HTTP triggered function executed successfully!</h1>"
-                : $"<h1>This HTTP triggered function executed successfully!</h1> \n CoinCap.io json respon is \n {json}";
+                ? "This HTTP triggered function executed successfully!"
+                : $"This HTTP triggered function executed successfully! \n CoinCap.io json respon is: \n USD = {varBitcoinUSD} \n BRL Rate = {varBRLRate} \n Bicoin BRL: {varBitcoinBRL} \n Send e-mail: {varTriggerMail} \n Timestamp: {timeStamp}";
+                    
+                
 
             return new OkObjectResult(responseMessage);
         }
