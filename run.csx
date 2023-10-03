@@ -1,5 +1,7 @@
-//API to get BitCoin value https://coincap.io
+// https://www.youtube.com/watch?v=btmAfKz2ijY&t=538s
+// API to get BitCoin value https://coincap.io
 // https://api.coincap.io/v2/assets/bitcoin
+
 
 #r "Newtonsoft.Json"
 #r "System.Net.Http" // need for http client to call HTTP API
