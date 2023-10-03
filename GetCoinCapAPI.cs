@@ -1,6 +1,8 @@
 // Youtube tutorial: https://www.youtube.com/watch?v=btmAfKz2ijY&t=538s
 // API to get BitCoin value https://coincap.io
-// https://api.coincap.io/v2/assets/bitcoin
+// https://api.coincap.io/v2/assets/bitcoin :Get BitCoin 
+// https://api.coincap.io/v2/rates/brazilian-real :Get BRL Rate 
+// https://zetcode.com/csharp/json/ :Json handle
 
 using System;
 using System.IO;
@@ -12,6 +14,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Net.Http; // need for http client to call HTTP API
+using JsonDocument; // Json parse
+
 
 
 namespace GetCoincapAPI.Function
@@ -38,9 +42,13 @@ namespace GetCoincapAPI.Function
             var json = await response.Content.ReadAsStringAsync();
             dynamic responseData = JsonConvert.DeserializeObject(json);
 
+            // To Test
+            //doc = JsonDocument.Parse(json);
+            //JsonElement root = doc.RootElement;
+
             string responseMessage = string.IsNullOrEmpty(json)
-            ? "This HTTP triggered function executed successfully! "
-                : $"This HTTP triggered function executed sucessfully! \n CoinCap.io json respon is \n {json}";
+            ? "<h1>This HTTP triggered function executed successfully!</h1>"
+                : $"<h1>This HTTP triggered function executed successfully!</h1> \n CoinCap.io json respon is \n {json}";
 
             return new OkObjectResult(responseMessage);
         }
