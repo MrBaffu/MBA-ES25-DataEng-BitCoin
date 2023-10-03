@@ -2,7 +2,6 @@
 // API to get BitCoin value https://coincap.io
 // https://api.coincap.io/v2/assets/bitcoin
 
-
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -14,12 +13,14 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Net.Http; // need for http client to call HTTP API
 
+
 namespace GetCoincapAPI.Function
 {
     public static class GetCoinCapAPI
     {
         [FunctionName("GetCoinCapAPI")]
-        public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
+        
+        public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
