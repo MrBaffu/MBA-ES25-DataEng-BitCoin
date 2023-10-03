@@ -9,7 +9,8 @@ namespace MyBitCoinAPITimeTrigger
     public class MyBitCoinAPI_TimeTrigger
     {
         [FunctionName("MyBitCoinAPI_TimeTrigger")]
-        public void Run([TimerTrigger("0 0 * * * *")]TimerInfo myTimer, ILogger log)
+        //public void Run([TimerTrigger("0 0 * * * *")]TimerInfo myTimer, ILogger log)
+        public void Run([TimerTrigger("0 */15 * * * *")]TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
