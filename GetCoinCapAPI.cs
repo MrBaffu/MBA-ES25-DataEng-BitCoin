@@ -3,6 +3,9 @@
 // https://api.coincap.io/v2/assets/bitcoin Get BitCoin 
 // https://api.coincap.io/v2/rates/brazilian-real Get BRL Rate 
 // https://zetcode.com/csharp/json/ Json handle
+// https://www.youtube.com/watch?v=LZxm4A0qBa4 Connect to DB
+// https://learn.microsoft.com/en-gb/samples/azure-samples/azure-sql-binding-func-dotnet-todo/todo-backend-dotnet-azure-sql-bindings-azure-functions/
+
 
 using System;
 using System.IO;
