@@ -105,7 +105,7 @@ namespace GetCoincapAPI.Function
                             {
                                 // Console.WriteLine("{0} {1}", reader.GetString(0), reader.GetString(1));
                                 // responseMessage = "Connection OK \n"+ connection + "\n" + sql; 
-                                //responseMessage = string.Format("{0} {1}", reader.GetString(0), reader.GetString(1));
+                                responseMessage = string.Format("{0} {1}", reader.GetString(0), reader.GetString(1));
                             }
                         }
                     }                    
@@ -114,7 +114,7 @@ namespace GetCoincapAPI.Function
             catch (SqlException e)
             {
                 //Console.WriteLine(e.ToString());
-                //responseMessage = e.ToString();
+                responseMessage = e.ToString();
             }
 
             // ------------   SQL Connection --------------- //
