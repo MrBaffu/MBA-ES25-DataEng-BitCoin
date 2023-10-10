@@ -103,10 +103,11 @@ namespace GetCoincapAPI.Function
                         {
                             while (reader.Read())
                             {
-                                // Console.WriteLine("{0} {1}", reader.GetString(0), reader.GetString(1));
+                                Console.WriteLine(String.Format("{0} {1}", 
+                                reader["id"], reader["brlRate"]));
                                 // responseMessage = "Connection OK \n"+ connection + "\n" + sql; 
                                 // responseMessage = string.Concat (responseMessage, " | " ,string.Format("{0} {1}", reader.GetString(0), reader.GetString(1)));
-                                responseMessage = "DB read OK";
+                                responseMessage = "\n DB read OK!";
                             }
                         }
                     }                    
