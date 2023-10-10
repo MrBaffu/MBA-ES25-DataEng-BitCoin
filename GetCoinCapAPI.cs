@@ -39,7 +39,7 @@ namespace GetCoincapAPI.Function
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            //const double bitcoinTrigger = 130000.00;
+            const double bitcoinTrigger = 130000.00;
 
             // API call URL preparation
             // string url = $"http://api.weatherstack.com/current?access_key={apiKey}&query={locationCityCountry}";
@@ -78,64 +78,65 @@ namespace GetCoincapAPI.Function
 
             // ------------   SQL Connection --------------- //
             
-            string responseMessage = "";
+            // string responseMessage = "";
             
-            try 
-            { 
-                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-                    builder.DataSource = "mbaes25-bicoin-serverdb.database.windows.net"; 
-                    builder.UserID = "mydbadmin";            
-                    builder.Password = "DBadmin!_";     
-                    builder.InitialCatalog = "MBA-ES25-Bitcoin_DB";
+            // try 
+            // { 
+            //     SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            //         builder.DataSource = "mbaes25-bicoin-serverdb.database.windows.net"; 
+            //         builder.UserID = "mydbadmin";            
+            //         builder.Password = "DBadmin!_";     
+            //         builder.InitialCatalog = "MBA-ES25-Bitcoin_DB";
 
-                using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
-                {
-                    Console.WriteLine("\nQuery data example:");
-                    Console.WriteLine("=========================================\n");
+            //     using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
+            //     {
+            //         Console.WriteLine("\nQuery data example:");
+            //         Console.WriteLine("=========================================\n");
                     
-                    connection.Open();       
+            //         connection.Open();       
 
-                    String sql = "SELECT * FROM myBitCoin";
+            //         String sql = "SELECT * FROM myBitCoin";
 
-                    using (SqlCommand command = new SqlCommand(sql, connection))
-                    {
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                // Console.WriteLine("{0} {1}", reader.GetString(0), reader.GetString(1));
-                                // responseMessage = "Connection OK \n"+ connection + "\n" + sql; 
-                                responseMessage = string.Format("{0} {1}", reader.GetString(0), reader.GetString(1));
-                            }
-                        }
-                    }                    
-                }
-            }
-            catch (SqlException e)
-            {
-                //Console.WriteLine(e.ToString());
-                responseMessage = e.ToString();
-            }
+            //         using (SqlCommand command = new SqlCommand(sql, connection))
+            //         {
+            //             using (SqlDataReader reader = command.ExecuteReader())
+            //             {
+            //                 while (reader.Read())
+            //                 {
+            //                     // Console.WriteLine("{0} {1}", reader.GetString(0), reader.GetString(1));
+            //                     // responseMessage = "Connection OK \n"+ connection + "\n" + sql; 
+            //                     responseMessage = string.Format("{0} {1}", reader.GetString(0), reader.GetString(1));
+            //                 }
+            //             }
+            //         }                    
+            //     }
+            // }
+            // catch (SqlException e)
+            // {
+            //     //Console.WriteLine(e.ToString());
+            //     responseMessage = e.ToString();
+            // }
 
             // ------------   SQL Connection --------------- //
             
 
-            // string varTriggerMail = "False"; 
-            // if (varBitcoinBRL > bitcoinTrigger)
-            //     {
-            //         varTriggerMail = "True";
-            //     }
-            // else
-            //     {
-            //         varTriggerMail = "False";
-            //     }
+            string varTriggerMail = "False"; 
+            if (varBitcoinBRL > bitcoinTrigger)
+                {
+                    varTriggerMail = "True";
+                }
+            else
+                {
+                    varTriggerMail = "False";
+                }
             
             DateTime timeStamp = DateTime.Now;
 
-            // string responseMessage = string.IsNullOrEmpty(json)
-            //     ? "This HTTP triggered function executed successfully!"
-            //     : $"This HTTP triggered function executed successfully! \n CoinCap.io json respon is: \n USD = {varBitcoinUSD} \n BRL Rate = {varBRLRate} \n Bicoin BRL: {varBitcoinBRL} \n Send e-mail: {varTriggerMail} \n Timestamp: {timeStamp}";
-                    
+            string responseMessage = string.IsNullOrEmpty(json)
+                ? "This HTTP triggered function executed successfully!"
+                : $"This HTTP triggered function executed successfully! \n CoinCap.io json respon is: \n USD = {varBitcoinUSD} \n BRL Rate = {varBRLRate} \n Bicoin BRL: {varBitcoinBRL} \n Send e-mail: {varTriggerMail} \n Timestamp: {timeStamp}";
+
+            // responseMessage = "This HTTP OK";      
                 
             return new OkObjectResult(responseMessage);
         }
