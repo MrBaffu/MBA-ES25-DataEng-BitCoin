@@ -118,7 +118,7 @@ namespace GetCoincapAPI.Function
             {
                 //Console.WriteLine(e.ToString());
                 // responseMessage = string.Concat (responseMessage, " | " ,e.ToString());
-                responseMessage = "DB read KO\n" + e.ToString;
+                responseMessage = "DB read KO\n" + e.ToString();
             }
 
             // ------------   SQL Connection --------------- //
