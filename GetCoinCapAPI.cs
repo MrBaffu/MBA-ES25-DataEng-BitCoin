@@ -5,22 +5,22 @@
 // https://zetcode.com/csharp/json/ Json handle
 // https://www.youtube.com/watch?v=LZxm4A0qBa4 Connect to DB
 // https://learn.microsoft.com/en-gb/samples/azure-samples/azure-sql-binding-func-dotnet-todo/todo-backend-dotnet-azure-sql-bindings-azure-functions/
-
+// https://learn.microsoft.com/en-us/azure/communication-services/quickstarts/email/send-email?tabs=windows%2Cconnection-string&pivots=platform-azportal
+// https://www.youtube.com/watch?v=t0in_d9Q2mU&t=8s
 
 using System;
-using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using Azure;
+using Azure.Communication.Email; // SendE-mail Azure Communication Service
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System.Net.Http;
-using System.Data.Common; // need for http client to call HTTP API
-//using JsonDocument; // Json parse
-using System.Data.SqlClient;
 using Microsoft.Data.SqlClient; 
+
 
 namespace GetCoincapAPI.Function
 {
@@ -28,8 +28,6 @@ namespace GetCoincapAPI.Function
     public static class GetCoinCapAPI
     {
         [FunctionName("GetCoinCapAPI")]
-
-
 
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] 
@@ -39,14 +37,21 @@ namespace GetCoincapAPI.Function
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            const double bitcoinTrigger = 130000.00;
+            // --- Start DateTimeStamp value --- //
+            DateTime timeStamp = DateTime.Now;
+            // --- End DateTimeStamp value --- //
 
-            // API call URL preparation
+            // --- Start Response Message iniciate --- //
+            string responseMessage = "";
+            // --- End Response Message iniciate --- //
+
+
+
+            // --- Start Call API to get Bitcoin in USD --- //
             // string url = $"http://api.weatherstack.com/current?access_key={apiKey}&query={locationCityCountry}";
             string url = "https://api.coincap.io/v2/assets/bitcoin"; //API URL to get Asset Cost
             log.LogInformation($"url: {url}");
 
-            // Initiate http call with weatherstack api
             var client = new HttpClient();
             var response = await client.GetAsync(url);
 
@@ -55,14 +60,13 @@ namespace GetCoincapAPI.Function
             dynamic responseData = JsonConvert.DeserializeObject(json);
             dynamic varBitCoinPriceUsd = responseData.data.priceUsd;
             double varBitcoinUSD = Convert.ToDouble(varBitCoinPriceUsd);
+            // --- End Call API to get Bitcoin in USD --- //
 
-
-            // API call URL preparation
+            // --- Start Call API to get USD/BRL rate  --- //
             // string url = $"http://api.weatherstack.com/current?access_key={apiKey}&query={locationCityCountry}";
             url = "https://api.coincap.io/v2/rates/brazilian-real"; //API URL to get Asset Cost
             log.LogInformation($"url: {url}");
 
-            // Initiate http call with weatherstack api
             client = new HttpClient();
             response = await client.GetAsync(url);
 
@@ -71,10 +75,19 @@ namespace GetCoincapAPI.Function
             responseData = JsonConvert.DeserializeObject(json);
             dynamic varJsonBRLRate = responseData.data.rateUsd;
             double varBRLRate = Convert.ToDouble(varJsonBRLRate);
+            // --- end Call API to get USD/BRL rate  --- //
 
+
+            // --- Start Calc Bitcoin value in BRL --- //
             double varBitcoinBRL = varBitcoinUSD/varBRLRate;
+            // --- Start Calc Bitcoin value in BRL --- //
 
-            //string varTriggerMail = "False"; 
+
+            // --- Start Send E-mail --- //
+            // Define Bitcoint Trigger to Send e-mail //
+            const double bitcoinTrigger = 130000.00;
+            
+            // Validate trigger Flag //
             Boolean varTriggerMail = false;
             if (varBitcoinBRL < bitcoinTrigger)
                 {
@@ -84,16 +97,50 @@ namespace GetCoincapAPI.Function
                 {
                     varTriggerMail = false;
                 }
-            
-            DateTime timeStamp = DateTime.Now;
+
+            // 
+            // This code retrieves your connection string from an environment variable.
+            string connectionString = "endpoint=https://commservicesbitcoin.unitedstates.communication.azure.com/;accesskey=4opAEaMjX9pe3Qc0OSNNDscbbJcXtvqZe7BZ8mD/FTYhswz+CtqcuR/gZSka6eI2CSIoA2sG7QIwebv2HTVD3w==";
+            var emailClient = new EmailClient(connectionString);
+
+             EmailSendOperation emailSendOperation = await emailClient.SendAsync(
+                 Azure.WaitUntil.Completed,
+                 "DoNotReply@85c4848c-c4d1-4f5e-b14a-7ef5f646ebcb.azurecomm.net",
+                 "leosts18@gmail.com",
+                 "Bitcoin - Preço Baixo ",
+                 "<html><h1>Olá,Você está recebendo esse e-mail por que o valor da Bitcoint está abaixo de R$ 130mil.AtenciosamenteMBA-ES25-Grupo 2</h1l></html>"
+                 );
+            try
+            {
+                while (true)
+                {
+                    await emailSendOperation.UpdateStatusAsync();
+                    if (emailSendOperation.HasCompleted)
+                    {
+                        break;
+                    }
+                    await Task.Delay(100);
+                }
+
+                if (emailSendOperation.HasValue)
+                {
+                    Console.WriteLine($"Email queued for delivery. Status = {emailSendOperation.Value.Status}");
+                    responseMessage = $"Email queued for delivery. Status = {emailSendOperation.Value.Status}\n";
+                }
+            }
+            catch (RequestFailedException ex)
+            {
+                Console.WriteLine($"Email send failed with Code = {ex.ErrorCode} and Message = {ex.Message}");
+            }
+
+            /// Get the OperationId so that it can be used for tracking the message for troubleshooting
+            string operationId = emailSendOperation.Id;
+            Console.WriteLine($"Email operation id = {operationId}");
+
+            // --- End Send E-mail --- //
 
 
-
-
-            // ------------   SQL Connection --------------- //
-            
-            string responseMessage = "OK";
-            
+            // ------------ Start SQL Connection --------------- //            
             try 
             { 
                 // Making the DB Connection String //
@@ -108,7 +155,6 @@ namespace GetCoincapAPI.Function
                     // Executing the connection
                     connection.Open();       
 
-
                     // Query the 1st line Desc BEFORE add another line
                     String sql = "SELECT TOP 1 * FROM myBitCoin ORDER BY id Desc";
                     using (SqlCommand command = new SqlCommand(sql, connection))
@@ -119,7 +165,7 @@ namespace GetCoincapAPI.Function
                             {
                                 string varSqlResult = String.Format("{0} {1} {2}", reader["id"], reader["usdValue"], reader["timeStamp"]);
                                 Console.WriteLine(varSqlResult);
-                                responseMessage = "DB read OK! - " + timeStamp + "\n" + varSqlResult;
+                                responseMessage = responseMessage + "DB read OK! - " + timeStamp + "\n" + varSqlResult;
                             }
                         }
                     }
@@ -157,11 +203,12 @@ namespace GetCoincapAPI.Function
             catch (SqlException e)
             {
                 // Handle SQL error by display error message
-                responseMessage = "DB read KO | " + timeStamp + "\n" + e.ToString();
+                responseMessage = responseMessage + "DB read KO | " + timeStamp + "\n" + e.ToString();
             }
 
-            // ------------   SQL Connection --------------- //
-      
+            // ------------ End SQL Connection --------------- //
+ 
+
             //string responseMessage = string.IsNullOrEmpty(json)
             //    ? "This HTTP triggered function executed successfully!"
             //    : $"This HTTP triggered function executed successfully! \n CoinCap.io json respon is: \n USD = {varBitcoinUSD} \n BRL Rate = {varBRLRate} \n Bicoin BRL: {varBitcoinBRL} \n Send e-mail: {varTriggerMail} \n Timestamp: {timeStamp}";
