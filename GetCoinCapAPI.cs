@@ -108,7 +108,7 @@ namespace GetCoincapAPI.Function
                  "DoNotReply@85c4848c-c4d1-4f5e-b14a-7ef5f646ebcb.azurecomm.net",
                  "leosts18@gmail.com",
                  "Bitcoin - Preço Baixo ",
-                 "<html><h1>Olá,Você está recebendo esse e-mail por que o valor da Bitcoint está abaixo de R$ 130mil.AtenciosamenteMBA-ES25-Grupo 2</h1l></html>"
+                 "<html>Olá,<br>Você está recebendo esse e-mail por que o valor da Bitcoint está abaixo de R$ 130mil.<br>Atenciosamente,<br>MBA-ES25-Grupo 2B</html>"
                  );
             try
             {
