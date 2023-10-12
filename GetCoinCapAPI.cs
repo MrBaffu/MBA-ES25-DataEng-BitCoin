@@ -74,6 +74,20 @@ namespace GetCoincapAPI.Function
 
             double varBitcoinBRL = varBitcoinUSD/varBRLRate;
 
+            //string varTriggerMail = "False"; 
+            Boolean varTriggerMail = false;
+            if (varBitcoinBRL < bitcoinTrigger)
+                {
+                    varTriggerMail = true;
+                }
+            else
+                {
+                    varTriggerMail = false;
+                }
+            
+            DateTime timeStamp = DateTime.Now;
+
+
 
 
             // ------------   SQL Connection --------------- //
@@ -82,6 +96,7 @@ namespace GetCoincapAPI.Function
             
             try 
             { 
+                // Making the DB Connection String //
                 SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
                     builder.DataSource = "mbaes25-bicoin-serverdb.database.windows.net"; 
                     builder.UserID = "mydbadmin";            
@@ -90,52 +105,63 @@ namespace GetCoincapAPI.Function
 
                 using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
                 {
-                    Console.WriteLine("\nQuery data example:");
-                    Console.WriteLine("=========================================\n");
-                    
+                    // Executing the connection
                     connection.Open();       
 
-                    String sql = "SELECT * FROM myBitCoin";
 
+                    // Query the 1st line Desc BEFORE add another line
+                    String sql = "SELECT TOP 1 * FROM myBitCoin ORDER BY id Desc";
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             while (reader.Read())
                             {
-                                string varSqlResult = String.Format("{0} {1}", reader["id"], reader["brlRate"]);
+                                string varSqlResult = String.Format("{0} {1} {2}", reader["id"], reader["usdValue"], reader["timeStamp"]);
                                 Console.WriteLine(varSqlResult);
-
-                                // responseMessage = "Connection OK \n"+ connection + "\n" + sql; 
-                                // responseMessage = string.Concat (responseMessage, " | " ,string.Format("{0} {1}", reader.GetString(0), reader.GetString(1)));
-                                responseMessage = "DB read OK!\n" + varSqlResult;
+                                responseMessage = "DB read OK! - " + timeStamp + "\n" + varSqlResult;
                             }
                         }
-                    }                    
+                    }
+
+                    // Query to INSERT a new line with API result using the same connection
+                    sql = "INSERT INTO myBitCoin (usdValue, brlRate, brlValue, sendEmail, timeStamp) VALUES (@usdValue, @brlRate, @brlValue, @sendEmail, @timeStamp)";
+                    using (SqlCommand command = new SqlCommand(sql, connection))
+                    {
+                        command.Parameters.AddWithValue("@usdValue",varBitcoinUSD);
+                        command.Parameters.AddWithValue("@brlRate",varBRLRate);
+                        command.Parameters.AddWithValue("@brlValue",varBitcoinBRL);
+                        command.Parameters.AddWithValue("@sendEmail",varTriggerMail);
+                        command.Parameters.AddWithValue("@timeStamp",timeStamp);
+                        command.ExecuteNonQuery();
+                    }
+
+                    // Query the 1st line Desc AFTER added line
+                    sql = "SELECT TOP 1 * FROM myBitCoin ORDER BY id Desc";
+                    using (SqlCommand command = new SqlCommand(sql, connection))
+                    {
+                         using (SqlDataReader reader = command.ExecuteReader())
+                         {
+                             while (reader.Read())
+                             {
+                                 string varSqlResult = String.Format("{0} {1} {2}", reader["id"], reader["usdValue"], reader["timeStamp"]);
+                                 Console.WriteLine(varSqlResult);
+                                 responseMessage = responseMessage + "\n" + varSqlResult;
+                             }
+                         }
+                    }
+                // Close DB connection
+                connection.Close();
                 }
             }
             catch (SqlException e)
             {
-                //Console.WriteLine(e.ToString());
-                // responseMessage = string.Concat (responseMessage, " | " ,e.ToString());
-                responseMessage = "DB read KO\n" + e.ToString();
+                // Handle SQL error by display error message
+                responseMessage = "DB read KO | " + timeStamp + "\n" + e.ToString();
             }
 
             // ------------   SQL Connection --------------- //
-            
-
-            string varTriggerMail = "False"; 
-            if (varBitcoinBRL > bitcoinTrigger)
-                {
-                    varTriggerMail = "True";
-                }
-            else
-                {
-                    varTriggerMail = "False";
-                }
-            
-            DateTime timeStamp = DateTime.Now;
-
+      
             //string responseMessage = string.IsNullOrEmpty(json)
             //    ? "This HTTP triggered function executed successfully!"
             //    : $"This HTTP triggered function executed successfully! \n CoinCap.io json respon is: \n USD = {varBitcoinUSD} \n BRL Rate = {varBRLRate} \n Bicoin BRL: {varBitcoinBRL} \n Send e-mail: {varTriggerMail} \n Timestamp: {timeStamp}";
