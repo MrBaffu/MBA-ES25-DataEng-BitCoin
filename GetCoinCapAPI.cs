@@ -99,44 +99,53 @@ namespace GetCoincapAPI.Function
                 }
 
             // 
-            // This code retrieves your connection string from an environment variable.
-            string connectionString = "endpoint=https://commservicesbitcoin.unitedstates.communication.azure.com/;accesskey=4opAEaMjX9pe3Qc0OSNNDscbbJcXtvqZe7BZ8mD/FTYhswz+CtqcuR/gZSka6eI2CSIoA2sG7QIwebv2HTVD3w==";
-            var emailClient = new EmailClient(connectionString);
-
-             EmailSendOperation emailSendOperation = await emailClient.SendAsync(
-                 Azure.WaitUntil.Completed,
-                 "DoNotReply@85c4848c-c4d1-4f5e-b14a-7ef5f646ebcb.azurecomm.net",
-                 "leosts18@gmail.com",
-                 "Bitcoin - Preço Baixo ",
-                 "<html>Olá,<br>Você está recebendo esse e-mail por que o valor da Bitcoint está abaixo de R$ 130mil.<br>Atenciosamente,<br>MBA-ES25-Grupo 2B</html>"
-                 );
-            try
+            
+            if (varTriggerMail)
             {
-                while (true)
+
+            
+                // This code retrieves your connection string from an environment variable.
+                string connectionString = "endpoint=https://commservicesbitcoin.unitedstates.communication.azure.com/;accesskey=4opAEaMjX9pe3Qc0OSNNDscbbJcXtvqZe7BZ8mD/FTYhswz+CtqcuR/gZSka6eI2CSIoA2sG7QIwebv2HTVD3w==";
+                var emailClient = new EmailClient(connectionString);
+
+                EmailSendOperation emailSendOperation = await emailClient.SendAsync(
+                    Azure.WaitUntil.Completed,
+                    "DoNotReply@85c4848c-c4d1-4f5e-b14a-7ef5f646ebcb.azurecomm.net",
+                    "leosts18@gmail.com",
+                    "Bitcoin - Preço Baixo ",
+                    "<html>Olá,<br>Você está recebendo esse e-mail por que o valor da Bitcoint está abaixo de R$ 130mil.<br>Atenciosamente,<br>MBA-ES25-Grupo 2B</html>"
+                    );
+                try
                 {
-                    await emailSendOperation.UpdateStatusAsync();
-                    if (emailSendOperation.HasCompleted)
+                    while (true)
                     {
-                        break;
+                        await emailSendOperation.UpdateStatusAsync();
+                        if (emailSendOperation.HasCompleted)
+                        {
+                            break;
+                        }
+                        await Task.Delay(100);
                     }
-                    await Task.Delay(100);
-                }
 
-                if (emailSendOperation.HasValue)
+                    if (emailSendOperation.HasValue)
+                    {
+                        Console.WriteLine($"Email queued for delivery. Status = {emailSendOperation.Value.Status}");
+                        responseMessage = $"Email queued for delivery. Status = {emailSendOperation.Value.Status}\n";
+                    }
+                }
+                catch (RequestFailedException ex)
                 {
-                    Console.WriteLine($"Email queued for delivery. Status = {emailSendOperation.Value.Status}");
-                    responseMessage = $"Email queued for delivery. Status = {emailSendOperation.Value.Status}\n";
+                    Console.WriteLine($"Email send failed with Code = {ex.ErrorCode} and Message = {ex.Message}");
                 }
+
+                /// Get the OperationId so that it can be used for tracking the message for troubleshooting
+                string operationId = emailSendOperation.Id;
+                Console.WriteLine($"Email operation id = {operationId}");
             }
-            catch (RequestFailedException ex)
+            else
             {
-                Console.WriteLine($"Email send failed with Code = {ex.ErrorCode} and Message = {ex.Message}");
+                responseMessage = $"O valor em BRL do Bitcoin é {varBitcoinBRL}, maior que {bitcoinTrigger} reais. Não enviar e-mail.\n";
             }
-
-            /// Get the OperationId so that it can be used for tracking the message for troubleshooting
-            string operationId = emailSendOperation.Id;
-            Console.WriteLine($"Email operation id = {operationId}");
-
             // --- End Send E-mail --- //
 
 
