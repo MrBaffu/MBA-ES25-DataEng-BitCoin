@@ -102,8 +102,6 @@ namespace GetCoincapAPI.Function
             
             if (varTriggerMail)
             {
-
-            
                 // This code retrieves your connection string from an environment variable.
                 string connectionString = "endpoint=https://commservicesbitcoin.unitedstates.communication.azure.com/;accesskey=4opAEaMjX9pe3Qc0OSNNDscbbJcXtvqZe7BZ8mD/FTYhswz+CtqcuR/gZSka6eI2CSIoA2sG7QIwebv2HTVD3w==";
                 var emailClient = new EmailClient(connectionString);
